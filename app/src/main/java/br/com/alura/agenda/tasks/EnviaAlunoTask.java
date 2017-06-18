@@ -2,7 +2,7 @@ package br.com.alura.agenda.tasks;
 
 import android.os.AsyncTask;
 
-import br.com.alura.agenda.WebClient;
+import br.com.alura.agenda.web.WebClient;
 import br.com.alura.agenda.converter.AlunoConverter;
 import br.com.alura.agenda.modelo.Aluno;
 
