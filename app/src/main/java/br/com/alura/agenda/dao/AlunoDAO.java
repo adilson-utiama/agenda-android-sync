@@ -25,7 +25,8 @@ public class AlunoDAO extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql = "CREATE TABLE Alunos (id INTEGER PRIMARY KEY, " +
+        String sql = "CREATE TABLE Alunos (" +
+                "id CHAR(36) PRIMARY KEY, " +
                 "nome TEXT NOT NULL, " +
                 "endereco TEXT, " +
                 "telefone TEXT, " +
@@ -96,11 +97,17 @@ public class AlunoDAO extends SQLiteOpenHelper {
 
     public void insere(Aluno aluno) {
         SQLiteDatabase db = getWritableDatabase();
-
+        insereUUIDSeNecessario(aluno);
         ContentValues dados = getDadosDoAluno(aluno);
 
         db.insert("Alunos", null, dados);
      
+    }
+
+    private void insereUUIDSeNecessario(Aluno aluno) {
+        if(aluno.getId() == null){
+            aluno.setId(geraUUID());
+        }
     }
 
     public List<Aluno> buscaAlunos() {
@@ -135,6 +142,7 @@ public class AlunoDAO extends SQLiteOpenHelper {
     @NonNull
     private ContentValues getDadosDoAluno(Aluno aluno) {
         ContentValues dados = new ContentValues();
+        dados.put("id", aluno.getId());
         dados.put("nome", aluno.getNome());
         dados.put("endereco", aluno.getEndereco());
         dados.put("telefone", aluno.getTelefone());
@@ -165,4 +173,21 @@ public class AlunoDAO extends SQLiteOpenHelper {
         return result > 0;
     }
 
+    public void sincroniza(List<Aluno> alunos) {
+        for(Aluno aluno : alunos){
+            if(existe(aluno)){
+                edita(aluno);
+            }else{
+                insere(aluno);
+            }
+        }
+    }
+
+    private boolean existe(Aluno aluno) {
+        SQLiteDatabase db = getReadableDatabase();
+        String existe = "SELECT id FROM Alunos WHERE id = ? LIMIT 1";
+        Cursor cursor = db.rawQuery(existe, new String[]{aluno.getId()});
+        int quantidade = cursor.getCount();
+        return quantidade > 0;
+    }
 }
