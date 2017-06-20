@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -64,6 +65,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
 
         registerForContextMenu(listaAlunos);
 
+        buscaAlunos();
+
     }
 
     private void carregaLista() {
@@ -75,7 +78,6 @@ public class ListaAlunosActivity extends AppCompatActivity {
             Log.i("id do aluno: ", String.valueOf(aluno.getId()));
         }
 
-
         alunoDAO.close();
 
         AlunosAdapter adapter = new AlunosAdapter(this, alunos);
@@ -86,6 +88,10 @@ public class ListaAlunosActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        carregaLista();
+    }
+
+    private void buscaAlunos() {
         Call<AlunoSync> call = new RetrofitInicializador().getAlunoService().lista();
         call.enqueue(new Callback<AlunoSync>() {
             @Override
@@ -102,8 +108,6 @@ public class ListaAlunosActivity extends AppCompatActivity {
                 Log.e("onFailure chamado", t.getMessage());
             }
         });
-
-        carregaLista();
     }
 
     @Override
@@ -176,11 +180,29 @@ public class ListaAlunosActivity extends AppCompatActivity {
         deletar.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                AlunoDAO alunoDAO = new AlunoDAO(ListaAlunosActivity.this);
-                alunoDAO.deleta(aluno);
-                alunoDAO.close();
 
-                carregaLista();
+                Call<Void> call = new RetrofitInicializador().getAlunoService().deleta(aluno.getId());
+                call.enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        Log.i("onResponse", "Aluno removido com sucesso");
+                        AlunoDAO alunoDAO = new AlunoDAO(ListaAlunosActivity.this);
+                        alunoDAO.deleta(aluno);
+                        alunoDAO.close();
+
+                        Toast.makeText(ListaAlunosActivity.this, "Aluno removido com sucesso", Toast.LENGTH_SHORT).show();
+
+                        carregaLista();
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e("onFailure: ", "Nao foi possivel remover aluno");
+                        Toast.makeText(ListaAlunosActivity.this, "Não foi possivel remover aluno", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
                 return false;
             }
         });
