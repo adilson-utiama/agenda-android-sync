@@ -6,11 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.Map;
 
 import br.com.alura.agenda.dao.AlunoDAO;
 import br.com.alura.agenda.dto.AlunoSync;
+import br.com.alura.agenda.event.AtualizaListaAlunoEvent;
 
 /**
  * Created by Adilson on 21/06/2017.
@@ -38,6 +41,8 @@ public class AgendaMessagingService extends FirebaseMessagingService {
                 AlunoDAO dao = new AlunoDAO(this);
                 dao.sincroniza(alunoSync.getAlunos());
                 dao.close();
+                EventBus eventBus = EventBus.getDefault();
+                eventBus.post(new AtualizaListaAlunoEvent());
             } catch (IOException e) {
                 e.printStackTrace();
             }
