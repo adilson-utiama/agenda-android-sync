@@ -66,6 +66,8 @@ public class AlunoSincronizador {
                 Log.i("Versao: ", preferences.getVersao());
                 eventBus.post(new AtualizaListaAlunoEvent());
 
+                atualizaAlunosInternos();
+
             }
 
             @Override
@@ -76,7 +78,7 @@ public class AlunoSincronizador {
         };
     }
 
-    public void atualizaAlunosInternos(){
+    private void atualizaAlunosInternos(){
         final AlunoDAO dao = new AlunoDAO(context);
         List<Aluno> alunos = dao.listaNaoSincronizados();
         Call<AlunoSync> call = new RetrofitInicializador().getAlunoService().atualiza(alunos);
