@@ -1,6 +1,7 @@
 package br.com.alura.agenda.sinc;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -17,19 +18,41 @@ import retrofit2.Response;
 public class AlunoSincronizador {
     private final Context context;
     private EventBus eventBus = new EventBus();
+    private AlunoPreferences preferences;
 
     public AlunoSincronizador(Context context) {
+
+        preferences = new AlunoPreferences(context);
         this.context = context;
     }
 
-    public void buscaAlunos() {
+    public void buscaTodos(){
+        if(preferences.temVersao()){
+            buscaNovos();
+        }else{
+            buscaAlunos();
+        }
+    }
+
+    private void buscaNovos() {
+        String versao = preferences.getVersao();
+        Call<AlunoSync> call = new RetrofitInicializador().getAlunoService().novos(versao);
+        call.enqueue(buscaAlunosCallback());
+    }
+
+    private void buscaAlunos() {
         Call<AlunoSync> call = new RetrofitInicializador().getAlunoService().lista();
-        call.enqueue(new Callback<AlunoSync>() {
+        call.enqueue(buscaAlunosCallback());
+    }
+
+    @NonNull
+    private Callback<AlunoSync> buscaAlunosCallback() {
+        return new Callback<AlunoSync>() {
             @Override
             public void onResponse(Call<AlunoSync> call, Response<AlunoSync> response) {
                 AlunoSync alunosSync = response.body();
                 String versao = alunosSync.getMomentoDaUltimaModificacao();
-                AlunoPreferences preferences = new AlunoPreferences(context);
+                preferences = new AlunoPreferences(context);
                 preferences.salvaVersao(versao);
                 AlunoDAO dao = new AlunoDAO(context);
                 dao.sincroniza(alunosSync.getAlunos());
@@ -45,6 +68,6 @@ public class AlunoSincronizador {
                 Log.e("onFailure chamado", t.getMessage());
                 eventBus.post(new AtualizaListaAlunoEvent());
             }
-        });
+        };
     }
 }
