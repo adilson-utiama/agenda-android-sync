@@ -17,7 +17,7 @@ import retrofit2.Response;
 
 public class AlunoSincronizador {
     private final Context context;
-    private EventBus eventBus = new EventBus();
+    private EventBus eventBus = EventBus.getDefault();
     private AlunoPreferences preferences;
 
     public AlunoSincronizador(Context context) {

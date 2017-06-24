@@ -19,6 +19,15 @@ public class Aluno implements Serializable {
     private Double nota;
     private String caminhoFoto;
     private int desativado;
+    private int sincronizado;
+
+    public int getSincronizado() {
+        return sincronizado;
+    }
+
+    public void setSincronizado(int sincronizado) {
+        this.sincronizado = sincronizado;
+    }
 
     public int getDesativado() {
         return desativado;

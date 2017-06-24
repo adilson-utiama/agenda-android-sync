@@ -90,7 +90,9 @@ public class ListaAlunosActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void atualizaListaAlunosEvent(AtualizaListaAlunoEvent event){
-        if(swipe.isRefreshing()) swipe.setRefreshing(false);
+        if(swipe.isRefreshing()) {
+             swipe.setRefreshing(false);
+        }
         carregaLista();
 
     }
@@ -101,7 +103,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
         List<Aluno> alunos =  alunoDAO.buscaAlunos();
 
         for (Aluno aluno : alunos) {
-            Log.i("id do aluno: ", String.valueOf(aluno.getId()));
+            Log.i("ID do aluno: ", String.valueOf(aluno.getId()));
+            Log.i("Aluno sincronizado: ", String.valueOf(aluno.getSincronizado()));
         }
 
         alunoDAO.close();
